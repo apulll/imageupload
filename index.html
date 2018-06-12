@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<input id="file" type="file" accept="image/*" />
+	<script src="./dist/lrz.bundle.js"></script>
+	<script>
+		document.querySelector('input').addEventListener('change', function () {
+    // this.files[0] 是用户选择的文件
+    lrz(this.files[0], {width: 1024})
+        .then(function (rst) {
+            // 把处理的好的图片给用户看看呗
+
+            var img = new Image();
+            img.src = rst.base64;
+
+            img.onload = function () {
+                document.body.appendChild(img);
+            };
+
+            return rst;
+        })
+
+        .then(function (rst) {
+            // 这里该上传给后端啦
+
+            /* ==================================================== */
+            // 原生ajax上传代码，所以看起来特别多 ╮(╯_╰)╭，但绝对能用
+            // 其他框架，例如jQuery处理formData略有不同，请自行google，baidu。
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:4000/');
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // 上传成功
+                } else {
+                    // 处理其他情况
+                }
+            };
+
+            xhr.onerror = function () {
+                // 处理错误
+            };
+
+            xhr.upload.onprogress = function (e) {
+                // 上传进度
+                var percentComplete = ((e.loaded / e.total) || 0) * 100;
+            };
+
+            // 添加参数
+            rst.formData.append('fileLen', rst.fileLen);
+            rst.formData.append('xxx', '我是其他参数');
+
+            // 触发上传
+            xhr.send(rst.formData);
+            /* ==================================================== */
+
+            return rst;
+        })
+
+        .catch(function (err) {
+            // 万一出错了，这里可以捕捉到错误信息
+            // 而且以上的then都不会执行
+
+            alert(err);
+        })
+
+        .always(function () {
+            // 不管是成功失败，这里都会执行
+        });
+});
+
+	</script>
+</body>
+</html>
